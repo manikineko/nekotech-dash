@@ -1,8 +1,7 @@
-  # Hello there! 👋
+# Hello there! 👋
 
 
-> [!NOTE]
-> This folder contains the language files of NekoTech Dash.
+### This folder contains the language files of NekoTech Dash.
 
 
 > [!WARNING]
