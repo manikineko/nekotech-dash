@@ -4,6 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import SideBar from './SideBar';
 import Header from './Header';
+import Node from './Node';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -41,7 +42,7 @@ const Dashboard = () => {
     <div className="flex h-screen bg-gray-800 text-white">
       <SideBar />
       <main className="flex-1 p-8 bg-gray-800 rounded-tl-lg overflow-y-auto">
-        <div className="container mx-auto p-4">
+        <div className="container mx-2 p-4">
           <Header />
           <div className="bg-gray-900 shadow-md rounded-md p-4">
             <h2 className="text-lg font-semibold mb-2">Dashboard</h2>
@@ -51,6 +52,8 @@ const Dashboard = () => {
               <div>
                 <p>Welcome, {user.email}</p>
                 {/* Additional dashboard content can go here */}
+                <Node />
+                
               </div>
             ) : (
               <p>Please log in to view the dashboard.</p>

@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const apiBaseUrl = 'http://de-prem-01.hosts.optikservers.com:35300';
+const apiBaseUrl = 'https://test.manikineko.nl/';
 
 export const axiosInstance = axios.create({
   baseURL: apiBaseUrl,

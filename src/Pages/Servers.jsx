@@ -10,8 +10,8 @@ const Settings = () => {
         <div className="container mx-auto p-4">
           <Header />
           <div className="bg-gray-900 shadow-md rounded-md p-4">
-            <h2 className="text-lg font-semibold mb-2">Settings</h2>
-            <p>This is the Settings page.</p>
+            <h2 className="text-lg font-semibold mb-2">Servers</h2>
+            <p>server page</p>
           </div>
         </div>
       </main>

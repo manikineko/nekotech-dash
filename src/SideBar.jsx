@@ -23,7 +23,8 @@ const SideBar = () => {
       <h2 className="text-2xl font-semibold">SideBar</h2>
       {user ? (
         <div className="mt-4">
-          <p>Welcome, {user.email}</p>
+          <p>Welcome, {user.email} 😀, </p>
+          <Node />
           <button
             className="btn btn-primary mt-2"
             onClick={() => {
