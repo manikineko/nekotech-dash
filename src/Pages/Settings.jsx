@@ -1,6 +1,9 @@
 import React from 'react';
 import Header from './Header';
 import SideBar from './SideBar';
+import ProfileSettings from '../Comps/Settings/ProfileSettings';
+import NotificationSettings from '../Comps/Settings/NotificationSettings';
+import PrivacySettings from '../Comps/Settings/PrivacySettings';
 
 const Settings = () => {
   return (
@@ -11,7 +14,9 @@ const Settings = () => {
           <Header />
           <div className="bg-gray-900 shadow-md rounded-md p-4">
             <h2 className="text-lg font-semibold mb-2">Settings</h2>
-            <p>This is the Settings page.</p>
+            <ProfileSettings />
+            <NotificationSettings />
+            <PrivacySettings />
           </div>
         </div>
       </main>
