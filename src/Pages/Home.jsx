@@ -37,7 +37,7 @@ const Home = () => {
                 <span className="text-xl font-semibold">{serverStatus === 'online' ? 'Server is Online' : 'Server is Offline'}</span>
               </div>
             ) : (
-              <p>Loading server status...</p>
+              <p> Loading server status...</p>
             )}
           </div>
         </div>

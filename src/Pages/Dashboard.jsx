@@ -5,6 +5,7 @@ import { auth, db } from '../firebase';
 import SideBar from './SideBar';
 import Header from './Header';
 import Node from './Node';
+import LXCList from '../LXCList'; // Import the new LXCList component
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -50,10 +51,10 @@ const Dashboard = () => {
               <p>Loading...</p>
             ) : user ? (
               <div>
-                <p>Welcome, {user.email}</p>
-                {/* Additional dashboard content can go here */}
+                <p>Welcome, {user.email} 👋</p>
+                {/* Pass the LXC IDs to the LXCList component */}
+                <LXCList lxcIds={user.LXC} />
                 <Node />
-                
               </div>
             ) : (
               <p>Please log in to view the dashboard.</p>

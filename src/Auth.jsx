@@ -26,7 +26,8 @@ const createUserDocument = async (user) => {
       isBan: false,
       createdAt: new Date(), // we need to      '
       servers: 1,
-      LXC: 0,  // Initialize free server count
+      LXC: [],
+      VM: [],  // Initialize free server count
       customServers: [], // Initialize custom servers as an empty array
     });
   }
