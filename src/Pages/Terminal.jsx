@@ -69,3 +69,6 @@ const Terminal = ({ containerId }) => {
 };
 
 export default Terminal;
+
+
+// do <url>/servers?con=<container id>
