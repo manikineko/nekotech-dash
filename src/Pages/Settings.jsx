@@ -14,9 +14,15 @@ const Settings = () => {
           <Header />
           <div className="bg-gray-900 shadow-md rounded-md p-4">
             <h2 className="text-lg font-semibold mb-2">Settings</h2>
+            <div className="settings-panel mb-4">
             <ProfileSettings />
+            </div>
+            <div className="settings-panel mb-4">
             <NotificationSettings />
+            </div>
+            <div className="settings-panel mb-4">
             <PrivacySettings />
+            </div>
           </div>
         </div>
       </main>

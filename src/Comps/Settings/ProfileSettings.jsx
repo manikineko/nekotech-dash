@@ -16,7 +16,7 @@ const ProfileSettings = () => {
       <h3 className="text-md font-semibold mb-2">Profile Settings</h3>
       <p>Manage your profile information here.</p>
       
-      <div className="mb-4">
+      <div className="settings-panel mb-4">
         <label className="block text-sm font-medium mb-1">Username: </label>
         <input 
           type="text" 
@@ -26,12 +26,12 @@ const ProfileSettings = () => {
         />
       </div>
       
-      <div className="mb-4">
+      <div className="settings-panel mb-4">
         <label className="block text-sm font-medium mb-1">Email: </label>
         <label className="block text-sm font-medium mb-1">{email}</label>
       </div>
       
-      <div className="mb-4">
+      <div className="settings-panel mb-4">
         <label className="block text-sm font-medium mb-1">Profile Picture: </label>
         <input 
           type="file" 
@@ -43,7 +43,7 @@ const ProfileSettings = () => {
         )}
       </div>
       
-      <div className="mb-4">
+      <div className="settings-panel mb-4">
         <label className="block text-sm font-medium mb-1">Bio: </label>
         <textarea 
           value={bio} 
