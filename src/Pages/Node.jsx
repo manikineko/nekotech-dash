@@ -46,7 +46,7 @@ const Node = () => {
       ) : (
         <div className="flex items-center">
           <FaServer className="text-white-500 text-2xl mr-5" /> {/* Green server icon for online status */}
-          <h1 className="text-green-400">‎{nodeStatus}</h1>
+          <h1 className="text-green-400">‎ {nodeStatus}</h1>
         </div>
       )}
     </div>

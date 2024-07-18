@@ -6,6 +6,8 @@ import SideBar from './SideBar';
 import Header from './Header';
 import Node from './Node';
 import LXCList from '../LXCList'; // Import the new LXCList component
+import LaunchConvoyPanel from './LaunchConvoyPanel';
+import Starter from './Starter';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -51,13 +53,16 @@ const Dashboard = () => {
               <p>Loading...</p>
             ) : user ? (
               <div>
-                <p>Welcome, {user.email} 👋</p>
+                <p>Welcome, 「 ✦ {user.email} ✦ 」👋</p>
                 {/* Pass the LXC IDs to the LXCList component */}
                 <LXCList lxcIds={user.LXC} />
                 <Node />
+                <Starter />
+                <LaunchConvoyPanel />
+
               </div>
             ) : (
-              <p>Please log in to view the dashboard.</p>
+              <p>👋 Please log in to view the dashboard.</p>
             )}
           </div>
         </div>

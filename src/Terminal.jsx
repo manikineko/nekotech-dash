@@ -26,6 +26,7 @@ const Terminal = () => {
     };
 
     return () => {
+      
       // Clean up WebSocket connection on component unmount
       if (socketRef.current) {
         socketRef.current.close();

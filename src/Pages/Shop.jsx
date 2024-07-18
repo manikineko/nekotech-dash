@@ -11,7 +11,7 @@ const Shop = () => {
           <Header />
           <div className="bg-gray-900 shadow-md rounded-md p-4">
             <h2 className="text-lg font-semibold mb-2">Shop</h2>
-            <p>This is the Shop page.</p>
+            <p>🚧 This page is Under Construction</p>
           </div>
         </div>
       </main>

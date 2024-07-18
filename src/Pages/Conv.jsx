@@ -2,7 +2,7 @@ import React from 'react';
 import Header from './Header';
 import SideBar from './SideBar';
 
-const Activity = () => {
+const Conv = () => {
   return (
     <div className="flex h-screen bg-gray-800 text-white">
       <SideBar />
@@ -10,8 +10,8 @@ const Activity = () => {
         <div className="container mx-auto p-4">
           <Header />
           <div className="bg-gray-900 shadow-md rounded-md p-4">
-            <h2 className="text-lg font-semibold mb-2">Activity</h2>
-            <p>This is the Activity page.</p>
+            <h2 className="text-lg font-semibold mb-2">Convoy Panel 📟 </h2>
+            <p>🚧 This page is Under Construction.</p>
           </div>
         </div>
       </main>
@@ -19,4 +19,4 @@ const Activity = () => {
   );
 };
 
-export default Activity;
+export default Conv;
