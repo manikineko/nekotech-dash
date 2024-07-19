@@ -80,7 +80,7 @@ export const getUserDocument = async (uid) => {
 
 const ensureConvoyPanelAccount = async (user) => {
 
-    if (error.response && error.response.status === 404) {
+     try{
       const password = generateRandomPassword();
       await axios.post(`${CONVOY_API_BASE_URL}/application/users`, {
         name: user.displayName || user.email,
@@ -91,9 +91,10 @@ const ensureConvoyPanelAccount = async (user) => {
       // Save the password to the Firestore user document
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, { convoyPassword: password }, { merge: true });
-    } else {
-      console.error('Error ensuring Convoy Panel account:', error.message);
-    }
+     }
+      catch (error) {
+      }
+   
   
 };
 export const getConvoyUserIdByEmail = async (email) => {
