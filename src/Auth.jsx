@@ -79,9 +79,7 @@ export const getUserDocument = async (uid) => {
 };
 
 const ensureConvoyPanelAccount = async (user) => {
-  try {
-    await axios.get(`${CONVOY_API_BASE_URL}/users/${user.email}`);
-  } catch (error) {
+
     if (error.response && error.response.status === 404) {
       const password = generateRandomPassword();
       await axios.post(`${CONVOY_API_BASE_URL}/application/users`, {
@@ -96,7 +94,7 @@ const ensureConvoyPanelAccount = async (user) => {
     } else {
       console.error('Error ensuring Convoy Panel account:', error.message);
     }
-  }
+  
 };
 export const getConvoyUserIdByEmail = async (email) => {
   try {
