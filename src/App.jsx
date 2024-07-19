@@ -1,89 +1,103 @@
-
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
 import Dashboard from './Pages/Dashboard';
 import ProtectedRoute from './ProtectedRoute';
 import Shop from './Pages/Shop';
 import Settings from './Pages/Settings';
-import Activity from './Pages/Activity';
+import Conv from './Pages/Conv';
 import Servers from './Pages/Servers';
 import User from './Pages/User';
 import Payment from './Pages/Payment';
-import Admin from './Pages/Admin'; // Assuming you have an Admin component
+import Admin from './Pages/Admin';
+import LoadingOverlay from './Comps/LoadingOverlay';
 
-const App = () => (
-  <Router>
-    <Routes>
-      <Route path="/Login" element={<Login />} />
-      <Route path="/Register" element={<Register />} />
-      <Route 
-        path="/admin" 
-        element={
+const App = () => {
+  const [loading, setLoading] = useState(false);
+
+  const QueryRouter = () => {
+    const query = new URLSearchParams(useLocation().search);
+    const page = query.get('page');
+
+    let Component;
+    switch (page) {
+      case 'login':
+        Component = <Login />;
+        break;
+      case 'register':
+        Component = <Register />;
+        break;
+      case 'admin':
+        Component = (
           <ProtectedRoute requireAdmin>
             <Admin />
           </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/shop" 
-        element={
+        );
+        break;
+      case 'shop':
+        Component = (
           <ProtectedRoute>
             <Shop />
           </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/settings" 
-        element={
+        );
+        break;
+      case 'settings':
+        Component = (
           <ProtectedRoute>
             <Settings />
           </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/activity" 
-        element={
+        );
+        break;
+      case 'conv':
+        Component = (
           <ProtectedRoute>
-            <Activity />
+            <Conv />
           </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/servers" 
-        element={
+        );
+        break;
+      case 'servers':
+        Component = (
           <ProtectedRoute>
             <Servers />
           </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/user" 
-        element={
+        );
+        break;
+      case 'user':
+        Component = (
           <ProtectedRoute>
             <User />
           </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/payment" 
-        element={
+        );
+        break;
+      case 'payment':
+        Component = (
           <ProtectedRoute>
             <Payment />
           </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/" 
-        element={
+        );
+        break;
+      default:
+        Component = (
           <ProtectedRoute>
-            <Dashboard />
+            <Dashboard setLoading={setLoading} />
           </ProtectedRoute>
-        } 
-      />
-    </Routes>
-  </Router>
-);
+        );
+    }
+
+    return (
+      <Routes>
+        <Route path="/" element={Component} />
+      </Routes>
+    );
+  };
+
+  return (
+    <Router>
+      <QueryRouter />
+      {loading && <LoadingOverlay />}
+    </Router>
+  );
+};
 
 export default App;

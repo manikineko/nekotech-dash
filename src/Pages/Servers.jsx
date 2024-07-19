@@ -108,7 +108,7 @@ const Servers = () => {
               <h2 className="text-lg font-semibold mb-2">Servers</h2>
               {loading ? (
                 <p>Loading...</p>
-              ) : lxcContainers.length > 0 ? (
+            ) : lxcContainers.length > 0 ? (
                 lxcContainers.map((container, index) => (
                   <div key={user.LXC[index]} className="bg-gray-800 p-4 rounded-md mb-4">
                     <h3 className="text-md font-semibold mb-2">LXC {user.LXC[index]}</h3>

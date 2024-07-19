@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import anime from 'animejs/lib/anime.es.js';
-import { Resizable } from 're-resizable';
 import {
   Avatar,
   AvatarImage,
@@ -60,41 +59,45 @@ const SideBar = () => {
 
   const handleLogout = async () => {
     await signOut(auth);
-    window.location.href = '/login';
+    window.location.href = '/?page=login';
   };
 
   return (
     <aside className="flex flex-col w-34 p-4 bg-gray-900">
       <div className="flex items-center justify-center h-16 mb-8">
-        <img src="/logo.svg" alt="Neko-Astral Logo" className="w-12 h-12" />
+        <img src="/logo.svg" alt="Neko-Astral Logo" className="logo" />
       </div>
       <nav className="flex-1 space-y-4 sidebar-animation">
-        <a href="/" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/?page=dashboard" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <HomeIcon className="w-5 h-5" />
           <span>Home</span>
         </a>
-        <a href="/Servers" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/?page=servers" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <ServerIcon className="w-5 h-5" />
           <span>Servers</span>
         </a>
-        <a href="/Activity" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/?page=activity" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <ActivityIcon className="w-5 h-5" />
           <span>Activity</span>
         </a>
-        <a href="/Payment" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/?page=payment" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <ReceiptIcon className="w-5 h-5" />
           <span>Payment</span>
         </a>
-        <a href="/Shop" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/?page=shop" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <StoreIcon className="w-5 h-5" />
           <span>Shop</span>
         </a>
-        <a href="/Settings" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/?page=conv" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+          <ServerIcon className="w-5 h-5" />
+          <span>Convoy Info</span>
+        </a>
+        <a href="/?page=settings" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <SettingsIcon className="w-5 h-5" />
           <span>Settings</span>
         </a>
         {user && user.isAdmin && (
-          <a href="/Admin" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+          <a href="/?page=admin" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
             <SiIcon className="w-5 h-5" />
             <span>Admin</span>
           </a>
@@ -102,17 +105,10 @@ const SideBar = () => {
       </nav>
       {user && (
         <div className="flex items-center justify-center h-16 mt-8">
-          <Resizable
-            defaultSize={{
-              width: 26,
-              height: 26,
-            }}
-          >
-            <Avatar>
-              <AvatarImage src="/user.svg" className="avatar" />
-              <AvatarFallback>U</AvatarFallback>
-            </Avatar>
-          </Resizable>
+          <Avatar className="avatar">
+            <AvatarImage src="/user.svg" />
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
           <span className="ml-2">{user.email}</span>
         </div>
       )}
