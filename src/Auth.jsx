@@ -80,34 +80,25 @@ export const getUserDocument = async (uid) => {
 
 const ensureConvoyPanelAccount = async (user) => {
   try {
-    const response = await axios.get(`${CONVOY_API_BASE_URL}/application/users`);
-    const convoyUser = response.data.data.find(u => u.email === user.email);
-    if (convoyUser) {
-      await saveConvoyUserId(user.uid, convoyUser.id);
-    } else {
+    await axios.get(`${CONVOY_API_BASE_URL}/users/${user.email}`);
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
       const password = generateRandomPassword();
-      const createUserResponse = await axios.post(`${CONVOY_API_BASE_URL}/application/users`, {
+      await axios.post(`${CONVOY_API_BASE_URL}/application/users`, {
         name: user.displayName || user.email,
         email: user.email,
         password: password,
         root_admin: false
       });
-      const convoyUserId = createUserResponse.data.id;
-      await saveConvoyUserId(user.uid, convoyUserId, password);
+      // Save the password to the Firestore user document
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { convoyPassword: password }, { merge: true });
+    } else {
+      console.error('Error ensuring Convoy Panel account:', error.message);
     }
-  } catch (error) {
-    console.error('Error ensuring Convoy Panel account:', error.message);
   }
 };
 
-const saveConvoyUserId = async (uid, convoyUserId, password = null) => {
-  const userDocRef = doc(db, 'users', uid);
-  const data = { convoyUserId };
-  if (password) {
-    data.convoyPassword = password;
-  }
-  await setDoc(userDocRef, data, { merge: true });
-};
 
 const generateRandomPassword = () => {
   return Math.random().toString(36).slice(-8); // Simple random password generator

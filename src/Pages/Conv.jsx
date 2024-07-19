@@ -9,20 +9,15 @@ const Conv = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [convoyPassword, setConvoyPassword] = useState(null);
-  const [convoyUserId, setConvoyUserId] = useState(null);
 
   useEffect(() => {
     const fetchUser = async (user) => {
       try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setUser({ ...user, ...userData });
-          if (userData.convoyPassword) {
-            setConvoyPassword(userData.convoyPassword);
-          }
-          if (userData.convoyUserId) {
-            setConvoyUserId(userData.convoyUserId);
+          setUser({ ...user, ...userDoc.data() });
+          if (userDoc.data().convoyPassword) {
+            setConvoyPassword(userDoc.data().convoyPassword);
           }
         } else {
           setUser(user);
@@ -61,9 +56,6 @@ const Conv = () => {
                 <p>Welcome, 「 ✦ {user.email} ✦ 」👋</p>
                 {convoyPassword && (
                   <p>Your Convoy Panel password is: {convoyPassword}</p>
-                )}
-                {convoyUserId && (
-                  <p>Your Convoy Panel user ID is: {convoyUserId}</p>
                 )}
               </div>
             ) : (
