@@ -3,7 +3,7 @@ import { HiOutlineTerminal, HiOutlineExternalLink } from 'react-icons/hi';
 
 const LaunchConvoyPanel = () => {
   const launchConvoy = () => {
-    const convoyUrl = 'https://example.com/convoy'; // Replace with your desired URL
+    const convoyUrl = 'https://cpanel.in-cloud.us/'; // Replace with your desired URL
     window.open(convoyUrl, '_blank');
   };
 

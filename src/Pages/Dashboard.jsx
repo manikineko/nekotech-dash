@@ -12,6 +12,7 @@ import Starter from './Starter';
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [convoyPassword, setConvoyPassword] = useState(null);
 
   useEffect(() => {
     const fetchUser = async (user) => {
@@ -19,6 +20,9 @@ const Dashboard = () => {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           setUser({ ...user, ...userDoc.data() });
+          if (userDoc.data().convoyPassword) {
+            setConvoyPassword(userDoc.data().convoyPassword);
+          }
         } else {
           setUser(user);
         }
@@ -54,12 +58,14 @@ const Dashboard = () => {
             ) : user ? (
               <div>
                 <p>Welcome, 「 ✦ {user.email} ✦ 」👋</p>
+                {convoyPassword && (
+                  <p>Your Convoy Panel password is: {convoyPassword}</p>
+                )}
                 {/* Pass the LXC IDs to the LXCList component */}
                 <LXCList lxcIds={user.LXC} />
                 <Node />
                 <Starter />
                 <LaunchConvoyPanel />
-
               </div>
             ) : (
               <p>👋 Please log in to view the dashboard.</p>
