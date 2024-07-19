@@ -2,33 +2,47 @@ import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import axios from 'axios'; // Import axios for API calls
 import Header from './Header';
 import SideBar from './SideBar';
+import { getConvoyUserIdByEmail }from '../Auth'; // Import the getConvoyUserIdByEmail function
+const CONVOY_API_BASE_URL = 'https://cpanel.in-cloud.us/api';
+const CONVOY_API_TOKEN = '1|3Bckfcpv1LhPiMAG0i6ycvbRAnLMtdof9RA5kkar'; // Replace with your actual token
+
+axios.defaults.headers.common['Authorization'] = `Bearer ${CONVOY_API_TOKEN}`;
+axios.defaults.headers.common['Accept'] = 'application/json';
+axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 const Conv = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [convoyPassword, setConvoyPassword] = useState(null);
 
-  useEffect(() => {
-    const fetchUser = async (user) => {
-      try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          setUser({ ...user, ...userDoc.data() });
-          if (userDoc.data().convoyPassword) {
-            setConvoyPassword(userDoc.data().convoyPassword);
-          }
-        } else {
-          setUser(user);
+  const fetchUser = async (user) => {
+    try {
+    
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUser({ ...user, ...userData });
+        if (userData.convoyPassword) {
+          setConvoyPassword(userData.convoyPassword);
         }
-      } catch (error) {
-        console.error('Error fetching user', error);
-      } finally {
-        setLoading(false);
+        if (userData.email) {
+          const convoyId = await getConvoyUserIdByEmail(userData.email);
+          console.log('convoyId', convoyId);
+        }
+      } else {
+        setUser(user);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching user', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         fetchUser(user);

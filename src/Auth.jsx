@@ -98,6 +98,22 @@ const ensureConvoyPanelAccount = async (user) => {
     }
   }
 };
+export const getConvoyUserIdByEmail = async (email) => {
+  try {
+    const response = await axios.get(`${CONVOY_API_BASE_URL}/application/users`);
+    const users = response.data.data;
+    const user = users.find(u => u.email === email);
+    if (user) {
+      return user.id;
+    } else {
+      console.log('User not found');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching Convoy Panel user ID:', error.message);
+    return null;
+  }
+};
 
 
 const generateRandomPassword = () => {
