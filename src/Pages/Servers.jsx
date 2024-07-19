@@ -8,6 +8,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { FaPlay, FaStop } from 'react-icons/fa';
 import Terminal from './Terminal';
+import CreateVps from './CreateVps';
 
 const Servers = () => {
   const [user, setUser] = useState(null);
@@ -133,6 +134,7 @@ const Servers = () => {
             </div>
           )}
         </div>
+        <CreateVps/>
       </main>
     </div>
   );
