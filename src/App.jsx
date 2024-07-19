@@ -13,6 +13,7 @@ import Payment from './Pages/Payment';
 import Admin from './Pages/Admin'; // Assuming you have an Admin component
 import LoadingOverlay from './Comps/LoadingOverlay'; // Import LoadingOverlay component
 import Conv from './Pages/Conv';
+import Profile from './Pages/Profile';
 
 const App = () => {
   const [loading, setLoading] = useState(false);
@@ -42,7 +43,7 @@ const App = () => {
           path="/settings"
           element={
             <ProtectedRoute>
-              <Settings />
+              <Profile />
             </ProtectedRoute>
           }
         />
@@ -66,7 +67,7 @@ const App = () => {
           path="/user"
           element={
             <ProtectedRoute>
-              <User />
+              <Profile/>
             </ProtectedRoute>
           }
         />

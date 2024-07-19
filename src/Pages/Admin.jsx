@@ -24,7 +24,7 @@ const Admin = () => {
   const [message, setMessage] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const apiUrl = '/lxc';
+  const apiUrl = '/qemu';
 
   useEffect(() => {
     const fetchLxcContainers = async () => {

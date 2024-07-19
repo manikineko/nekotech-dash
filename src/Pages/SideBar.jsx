@@ -18,6 +18,8 @@ import { SiIcon } from 'react-icons/si';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { WiHail } from 'react-icons/wi';
+import { BsCloud } from 'react-icons/bs';
 
 const SideBar = () => {
   const [user, setUser] = useState(null);
@@ -77,9 +79,9 @@ const SideBar = () => {
           <ServerIcon className="w-5 h-5" />
           <span>Servers</span>
         </a>
-        <a href="/Activity" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
-          <ActivityIcon className="w-5 h-5" />
-          <span>Activity</span>
+        <a href="/conv" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+          <BsCloud className="w-5 h-5" />
+          <span>Convoy</span>
         </a>
         <a href="/Payment" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <ReceiptIcon className="w-5 h-5" />
@@ -110,7 +112,7 @@ const SideBar = () => {
           >
             <Avatar>
               <AvatarImage src="/user.svg" className="avatar" />
-              <AvatarFallback>U</AvatarFallback>
+              <AvatarFallback>You</AvatarFallback>
             </Avatar>
           </Resizable>
           <span className="ml-2">{user.email}</span>

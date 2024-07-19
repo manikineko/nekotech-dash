@@ -1,7 +1,7 @@
 import React from 'react';
 import { HiOutlineTerminal, HiOutlineExternalLink } from 'react-icons/hi';
 
-const LaunchConvoyPanel = () => {
+const LaunchConvoyPanel2 = () => {
   const launchConvoy = () => {
     const convoyUrl = 'https://cpanel.in-cloud.us';
     window.open(convoyUrl, '_blank');
@@ -28,17 +28,10 @@ const LaunchConvoyPanel = () => {
           Launch Convoy Now
           <HiOutlineExternalLink className="ml-2" /> {/* External link icon */}
         </button>
-        <button
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md transition duration-300 ease-in-out flex items-center"
-          onClick={createConvoyAccount}
-          style={{ fontSize: '1.2rem' }} // Increase font size
-        >
-          Create Convoy Account
-          <HiOutlineExternalLink className="ml-2" /> {/* External link icon */}
-        </button>
+        
       </div>
     </div>
   );
 };
 
-export default LaunchConvoyPanel;
+export default LaunchConvoyPanel2;

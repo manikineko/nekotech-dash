@@ -21,7 +21,7 @@ const Header = () => {
     // Simulate loading time
     setTimeout(() => {
       setIsLoading(false);
-    }, 2000); // Adjust the time as needed
+    }, 2000); // Adjust the time as needed //<p className="text-lg text-gray-200">Manage Your Virtual Environments</p>
 
     // Animation configuration
     anime({
@@ -46,7 +46,9 @@ const Header = () => {
             <h1 className="text-4xl font-bold text-center">In-Cloud.us ☁️</h1>
           
           <div className="headers-animation text-center mt-4">
-            <p className="text-lg text-gray-200">Manage Your Virtual Environments</p>
+
+            <h1 className="text-lg text-gray-200">Manage Your Virtual Environments</h1> 
+            <p className="text-lg text-gray-200 opacity-35">Version 1.0 Beta ©️2024 In-Cloud.us</p> 
           </div>
         </div>
       </header>
