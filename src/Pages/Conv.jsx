@@ -68,6 +68,11 @@ const Conv = () => {
       return;
     }
 
+    if (formData.password.length < 8 || !/[!@#$%^&*(),.?":{}|<>]/g.test(formData.password)) {
+      setError('Password must be at least 8 characters long and include at least one special character.');
+      return;
+    }
+
     try {
       const response = await createUser({ 
         name: formData.name, 
