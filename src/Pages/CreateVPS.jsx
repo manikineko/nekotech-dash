@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { createServer, getAllUsers } from '../LibConvoy';
 
@@ -14,7 +14,7 @@ const convertToBytes = (size, unit) => {
   return size * units[unit.toUpperCase()];
 };
 
-const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBandwidth = 30 }) => {
+const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBandwidth = 30, maxVpsCount = 3 }) => {
   const [name, setName] = useState('');
   const [hostname, setHostname] = useState('');
   const [email, setEmail] = useState('');
@@ -28,6 +28,7 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
   const [password, setPassword] = useState('');
   const [userPassword, setUserPassword] = useState('');
   const [dedicatedIP, setDedicatedIP] = useState(false);
+  const [currentVpsCount, setCurrentVpsCount] = useState(0);
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -56,12 +57,36 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
     fetchUserPassword();
   }, [user]);
 
+  useEffect(() => {
+    const fetchCurrentVpsCount = async () => {
+      if (user) {
+        try {
+          const db = getFirestore();
+          const q = query(collection(db, 'vps'), where('user_id', '==', user.uid));
+          const querySnapshot = await getDocs(q);
+          setCurrentVpsCount(querySnapshot.size);
+        } catch (err) {
+          console.error(err);
+          setError('Failed to fetch VPS count.');
+        }
+      }
+    };
+
+    fetchCurrentVpsCount();
+  }, [user]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setError('');
     setSuccess('');
     setPassword('');
+
+    if (currentVpsCount >= maxVpsCount) {
+      setError(`You have reached the maximum allowed VPS count of ${maxVpsCount}.`);
+      setLoading(false);
+      return;
+    }
 
     if (password.length < 8 || !/[!@#$%^&*(),.?":{}|<>]/g.test(password)) {
       setError('Password must be at least 8 characters long and include at least one special character.');
@@ -111,6 +136,7 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
       const response = await createServer(serverData);
       setSuccess('VM deployed successfully.');
       setMessage && setMessage('VM deployed successfully.');
+      setCurrentVpsCount(currentVpsCount + 1); // Increment the VPS count
     } catch (err) {
       console.error(err);
       setError(`Failed to deploy VM: ${err.message}`);
@@ -146,7 +172,7 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
           />
         </div>
         <div>
-          <label className="block text-lg mb-1" htmlFor="email">Convoy Email</label>
+          <label className="block text-lg mb-1" htmlFor="email">User Email</label>
           <input
             type="email"
             id="email"

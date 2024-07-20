@@ -263,7 +263,7 @@ const Conv = () => {
             </div>
           )}
           <LaunchConvoyPanel2 />
-          <CreateVPS setMessage={setMessage} maxCpu={2} maxMemory={4} maxDisk={20} maxBandwidth={30} />
+          <CreateVPS setMessage={setMessage} maxCpu={2} maxMemory={4} maxDisk={20} maxBandwidth={30} maxVpsCount={1} />
         </div>
       </main>
     </div>
