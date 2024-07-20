@@ -15,7 +15,7 @@ const convertToBytes = (size, unit) => {
   return size * units[unit.toUpperCase()];
 };
 
-const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBandwidth = 30, maxVpsCount = 3 }) => {
+const CreateVPS = ({ setMessage, maxCpu = 1, maxMemory = 1, maxDisk = 20, maxBandwidth = 30, maxVpsCount = 1 }) => {
   const [name, setName] = useState('');
   const [hostname, setHostname] = useState('');
   const [email, setEmail] = useState('');
@@ -109,7 +109,26 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
         setLoading(false);
         return;
       }
-
+      if(memory > maxMemory) {
+        setError(`Memory cannot exceed ${maxMemory} GB.`);
+        setLoading(false);
+        return;
+      }
+      if(disk > maxDisk) {
+        setError(`Disk size cannot exceed ${maxDisk} GB.`);
+        setLoading(false);
+        return;
+      }
+      if(bandwidth > maxBandwidth) {
+        setError(`Bandwidth cannot exceed ${maxBandwidth} GB.`);
+        setLoading(false);
+        return;
+      }
+      if(cpu > maxCpu) {
+        setError(`CPU cores cannot exceed ${maxCpu}.`);
+        setLoading(false);
+        return;
+      }
       // Create the VPS
       const serverData = {
         node_id: 1,
