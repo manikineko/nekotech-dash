@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { createUser, getAllUsers, updateUser } from '../LibConvoy'; // Update the path accordingly
 import Header from './Header';
 import SideBar from './SideBar';
-import { onAuthStateChanged } from 'firebase/auth';
-import LaunchConvoyPanel from './LaunchConvoyPanel';
 import LaunchConvoyPanel2 from './LaunchConvoyPanel2';
+import CreateVPS from './CreateVPS';
 
 const Conv = () => {
   const [user, setUser] = useState(null);
@@ -15,13 +15,10 @@ const Conv = () => {
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const fetchUser = async (user) => {
@@ -33,28 +30,13 @@ const Conv = () => {
           if (userData.Convoy && userData.Convoy.length > 0) {
             setConvoyUser(userData.Convoy[0]);
           } else {
-            // Check Convoy API for user existence
-            try {
-              const response = await axios.get(`https://cpanel.in-cloud.us/api/application/users?filter[email]=${user.email}`, {
-                headers: {
-                  'Authorization': 'Bearer 2|NThhqCh6kN3bckZTNKZZ3DfNqM6EEB0rZlFpym63',
-                  'Accept': 'application/json',
-                  'Content-Type': 'application/json',
-                },
-              });
-              const convoyUsers = response.data.data;
-              const existingUser = convoyUsers.find(u => u.email === user.email);
-              if (existingUser) {
-                setConvoyUser(existingUser);
-                // Save Convoy account info in Firebase
-                await setDoc(doc(db, 'users', user.uid), {
-                  Convoy: [{ name: existingUser.name, email: existingUser.email, password: '' }],
-                }, { merge: true });
-              } else {
-                setConvoyUser(null);
-              }
-            } catch (error) {
-              setError('Error fetching Convoy user data.');
+            const usersResponse = await getAllUsers();
+            const convoyUserData = usersResponse.data.find(u => u.email === user.email);
+            if (convoyUserData) {
+              setConvoyUser(convoyUserData);
+              await setDoc(doc(db, 'users', user.uid), { Convoy: [convoyUserData] }, { merge: true });
+            } else {
+              setConvoyUser(null);
             }
           }
         } else {
@@ -87,35 +69,17 @@ const Conv = () => {
     }
 
     try {
-      // Create user in Convoy
-      const response = await axios.post('https://cpanel.in-cloud.us/api/application/users', {
-        root_admin: false,
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      }, {
-        headers: {
-          'Authorization': 'Bearer 2|NThhqCh6kN3bckZTNKZZ3DfNqM6EEB0rZlFpym63',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+      const response = await createUser({ 
+        name: formData.name, 
+        email: formData.email, 
+        password: formData.password 
       });
 
-      // Store user information in Firebase
       await setDoc(doc(db, 'users', user.uid), {
-        Convoy: [{ name: formData.name, email: formData.email, password: formData.password }],
+        Convoy: [{ id: response.data.id, name: formData.name, email: formData.email, password: formData.password }],
       }, { merge: true });
 
-      // Fetch and set updated Convoy user info
-      const convoyResponse = await axios.get(`https://cpanel.in-cloud.us/api/application/users?filter[email]=${formData.email}`, {
-        headers: {
-          'Authorization': 'Bearer 2|NThhqCh6kN3bckZTNKZZ3DfNqM6EEB0rZlFpym63',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
-      const newUser = convoyResponse.data.data.find(u => u.email === formData.email);
-      setConvoyUser(newUser);
+      setConvoyUser(response.data);
       setShowCreateForm(false);
       setFormData({ name: '', email: '', password: '' });
     } catch (error) {
@@ -131,25 +95,15 @@ const Conv = () => {
     }
 
     try {
-      // Update user in Convoy
-      const response = await axios.put(`https://cpanel.in-cloud.us/api/application/users/${convoyUser.id}`, {
-        root_admin: convoyUser.root_admin,
-        name: formData.name,
-        email: formData.email,
-      }, {
-        headers: {
-          'Authorization': 'Bearer 2|NThhqCh6kN3bckZTNKZZ3DfNqM6EEB0rZlFpym63',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+      const response = await updateUser(convoyUser.id, { 
+        name: formData.name, 
+        email: formData.email 
       });
 
-      // Update user information in Firebase
       await setDoc(doc(db, 'users', user.uid), {
-        Convoy: [{ name: formData.name, email: formData.email, password: convoyUser.password }],
+        Convoy: [{ ...convoyUser, name: formData.name, email: formData.email }],
       }, { merge: true });
 
-      // Fetch and set updated Convoy user info
       setConvoyUser({ ...convoyUser, name: formData.name, email: formData.email });
       setShowEditForm(false);
       setFormData({ name: '', email: '', password: '' });
@@ -298,10 +252,9 @@ const Conv = () => {
             </div>
           )}
           <LaunchConvoyPanel2/>
+          <CreateVPS setMessage={setMessage} maxCpu={2} maxMemory={4} maxDisk={20} maxBandwidth={30} />
         </div>
-
       </main>
-      
     </div>
   );
 };
