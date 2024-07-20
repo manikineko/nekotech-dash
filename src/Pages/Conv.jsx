@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { createUser, getAllUsers, updateUser } from '../LibConvoy'; // Update the path accordingly
+import { createUser, getAllUsers, updateUser } from '../LibConvoy';
 import Header from './Header';
 import SideBar from './SideBar';
 import LaunchConvoyPanel2 from './LaunchConvoyPanel2';
@@ -74,10 +74,10 @@ const Conv = () => {
     }
 
     try {
-      const response = await createUser({ 
-        name: formData.name, 
-        email: formData.email, 
-        password: formData.password 
+      const response = await createUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
       });
 
       await setDoc(doc(db, 'users', user.uid), {
@@ -95,14 +95,14 @@ const Conv = () => {
 
   const handleEditUser = async () => {
     if (!formData.name || !formData.email) {
-      setError('Name and Email are required.');
+      setError('Name and Convoy Email are required.');
       return;
     }
 
     try {
-      const response = await updateUser(convoyUser.id, { 
-        name: formData.name, 
-        email: formData.email 
+      const response = await updateUser(convoyUser.id, {
+        name: formData.name,
+        email: formData.email
       });
 
       await setDoc(doc(db, 'users', user.uid), {
@@ -133,6 +133,12 @@ const Conv = () => {
     setShowPassword(false);
   };
 
+  useEffect(() => {
+    if (convoyUser) {
+      setFormData({ ...formData, email: convoyUser.email });
+    }
+  }, [convoyUser]);
+
   return (
     <div className="flex h-screen bg-gray-800 text-white">
       <SideBar />
@@ -148,7 +154,7 @@ const Conv = () => {
               {convoyUser ? (
                 <div>
                   <p><strong>Name:</strong> {convoyUser.name}</p>
-                  <p><strong>Email:</strong> {convoyUser.email}</p>
+                  <p><strong>Convoy Email:</strong> {convoyUser.email}</p>
                   <button
                     className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
                     onClick={() => setShowEditForm(true)}
@@ -185,7 +191,7 @@ const Conv = () => {
                       />
                       <input
                         type="email"
-                        placeholder="Email"
+                        placeholder="Convoy Email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="block w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded"
@@ -226,7 +232,7 @@ const Conv = () => {
                       />
                       <input
                         type="email"
-                        placeholder="Email"
+                        placeholder="Convoy Email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="block w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded"
@@ -256,7 +262,7 @@ const Conv = () => {
               )}
             </div>
           )}
-          <LaunchConvoyPanel2/>
+          <LaunchConvoyPanel2 />
           <CreateVPS setMessage={setMessage} maxCpu={2} maxMemory={4} maxDisk={20} maxBandwidth={30} />
         </div>
       </main>

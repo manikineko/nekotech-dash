@@ -14,19 +14,6 @@ const convertToBytes = (size, unit) => {
   return size * units[unit.toUpperCase()];
 };
 
-// Function to generate a random password
-const generatePassword = () => {
-  const length = 49;
-  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
-  let password = "";
-  while (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,50}$/.test(password)) {
-    password = Array.from(window.crypto.getRandomValues(new Uint8Array(length)))
-      .map(byte => charset[byte % charset.length])
-      .join('');
-  }
-  return password;
-};
-
 const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBandwidth = 30 }) => {
   const [name, setName] = useState('');
   const [hostname, setHostname] = useState('');
@@ -76,6 +63,12 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
     setSuccess('');
     setPassword('');
 
+    if (password.length < 8 || !/[!@#$%^&*(),.?":{}|<>]/g.test(password)) {
+      setError('Password must be at least 8 characters long and include at least one special character.');
+      setLoading(false);
+      return;
+    }
+
     try {
       // Fetch user ID based on email
       const userResponse = await getAllUsers();
@@ -93,9 +86,6 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
         return;
       }
 
-      const generatedPassword = generatePassword();
-      setPassword(generatedPassword);
-
       // Create the VPS
       const serverData = {
         node_id: 1,
@@ -112,7 +102,7 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
           backups: null,
           address_ids: dedicatedIP ? [1] : [] // Assuming ID 1 for dedicated IP
         },
-        account_password: generatedPassword, // Use the generated password
+        account_password: password, // Use the provided password
         should_create_server: true,
         template_uuid: 'b00edf9e-5041-4a87-983e-72a9a2f2d3d8', // Default template ID
         start_on_completion: false
@@ -156,12 +146,23 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
           />
         </div>
         <div>
-          <label className="block text-lg mb-1" htmlFor="email">User Email</label>
+          <label className="block text-lg mb-1" htmlFor="email">Convoy Email</label>
           <input
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-2 rounded-lg bg-gray-800 border border-gray-600"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-lg mb-1" htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full p-2 rounded-lg bg-gray-800 border border-gray-600"
             required
           />
@@ -221,14 +222,13 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
         <div>
           <label className="block text-lg mb-1" htmlFor="dedicatedIP">Dedicated IP</label>
           <input
-  type="checkbox"
-  id="dedicatedIP"
-  checked={dedicatedIP}
-  onChange={(e) => setDedicatedIP(e.target.checked)}
-  className="ml-2 p-2 rounded-lg bg-gray-800 border border-gray-600"
-  disabled
-/>
-
+            type="checkbox"
+            id="dedicatedIP"
+            checked={dedicatedIP}
+            onChange={(e) => setDedicatedIP(e.target.checked)}
+            className="ml-2 p-2 rounded-lg bg-gray-800 border border-gray-600"
+            disabled
+          />
         </div>
         <button
           type="submit"
