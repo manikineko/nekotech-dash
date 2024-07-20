@@ -24,12 +24,14 @@ const createUserDocument = async (user) => {
       email: user.email,
       isAdmin: false,
       isBan: false,
-      createdAt: new Date(), // we need to      '
+      createdAt: new Date(), // we need to
       Convoy: [],  // Initialize free server count
       customServers: [], // Initialize custom servers as an empty array
+      freeServers: 3 // Initialize with 3 free servers
     });
   }
 };
+
 export const logOut = () => {
   return signOut(auth);
 };
@@ -48,14 +50,15 @@ export const addCustomServer = async (userId, cores, ram) => {
   customServers.push({ cores, ram });
   await setDoc(userDocRef, { customServers }, { merge: true });
 };
-export const removeCustomServer = async (userId, index) => {  const userDocRef = doc(db, 'users', userId);
+
+export const removeCustomServer = async (userId, index) => {
+  const userDocRef = doc(db, 'users', userId);
   const userDoc = await getDoc(userDocRef);
   const customServers = userDoc.exists() ? userDoc.data().customServers : [];
   customServers.splice(index, 1);
   await setDoc(userDocRef, { customServers }, { merge: true });
 };
 
- 
 // Function to fetch user document
 export const getUserDocument = async (uid) => {
   if (!uid) return null;
@@ -65,5 +68,17 @@ export const getUserDocument = async (uid) => {
     return { uid, ...userDoc.data() };
   } catch (error) {
     console.error('Error fetching user', error.message);
+  }
+};
+
+// Function to get the number of free servers
+export const getFreeServers = async (userId) => {
+  const userDocRef = doc(db, 'users', userId);
+  const userDoc = await getDoc(userDocRef);
+  if (userDoc.exists()) {
+    return userDoc.data().freeServers || 0;
+  } else {
+    console.error('User document does not exist');
+    return 0;
   }
 };

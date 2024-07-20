@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { createServer, getAllUsers } from '../LibConvoy';
+import { getFreeServers, addFreeServer } from '../Auth'; // Import the functions
 
 // Function to convert storage units to bytes
 const convertToBytes = (size, unit) => {
@@ -61,10 +62,8 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
     const fetchCurrentVpsCount = async () => {
       if (user) {
         try {
-          const db = getFirestore();
-          const q = query(collection(db, 'vps'), where('user_id', '==', user.uid));
-          const querySnapshot = await getDocs(q);
-          setCurrentVpsCount(querySnapshot.size);
+          const freeServers = await getFreeServers(user.uid);
+          setCurrentVpsCount(freeServers);
         } catch (err) {
           console.error(err);
           setError('Failed to fetch VPS count.');
@@ -136,6 +135,9 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
       const response = await createServer(serverData);
       setSuccess('VM deployed successfully.');
       setMessage && setMessage('VM deployed successfully.');
+
+      // Increment the free server count
+      await addFreeServer(user.uid);
       setCurrentVpsCount(currentVpsCount + 1); // Increment the VPS count
     } catch (err) {
       console.error(err);
@@ -172,7 +174,7 @@ const CreateVPS = ({ setMessage, maxCpu = 2, maxMemory = 4, maxDisk = 20, maxBan
           />
         </div>
         <div>
-          <label className="block text-lg mb-1" htmlFor="email">User Email</label>
+          <label className="block text-lg mb-1" htmlFor="email">Convoy Email</label>
           <input
             type="email"
             id="email"
