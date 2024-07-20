@@ -8,6 +8,7 @@ import Node from './Node';
 import LXCList from '../LXCList'; // Import the new LXCList component
 import LaunchConvoyPanel from './LaunchConvoyPanel';
 import Starter from './Starter';
+import Radio from './Radio';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -55,10 +56,10 @@ const Dashboard = () => {
               <div>
                 <p>Welcome, 「 ✦ {user.email} ✦ 」👋</p>
                 {/* Pass the LXC IDs to the LXCList component */}
-                <LXCList lxcIds={user.LXC} />
                 <Node />
                 <Starter />
                 <LaunchConvoyPanel />
+                <Radio/>
 
               </div>
             ) : (

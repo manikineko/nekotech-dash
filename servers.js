@@ -1,20 +1,19 @@
 const express = require('express');
 const axios = require('axios').default;
-const http = require('http');
 const cors = require('cors');
-const fs = require('fs');
 const WebSocket = require('ws');
-const https = require('https');
+const fs = require('fs');
+const https = require('https'); // Import HTTPS module
 
 const app = express();
-const port = 35300;
+const port = 20011;
 const usersFile = 'users.json';
-/// stop NYA STOP
+
 // Enable CORS and JSON parsing
 app.use(cors());
 app.use(express.json());
 
-// Utility functions to read and write users from/to a JSON file
+// Utility function to read users from JSON file
 const readUsers = () => {
     if (!fs.existsSync(usersFile)) {
         fs.writeFileSync(usersFile, JSON.stringify([]));
@@ -23,18 +22,14 @@ const readUsers = () => {
     return JSON.parse(data);
 };
 
-const writeUsers = (users) => {
-    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
-};
-
 // Proxmox API configuration
 const proxmoxConfig = {
-    baseURL: 'https://proxmox.astralaxis.tech/api2/json',
+    baseURL: 'https://81.169.237.72:8006/api2/json/nodes/h3066910',
+    httpsAgent: new https.Agent({ rejectUnauthorized: false }), // Ignore SSL certificate issues
     headers: {
-        'Authorization': 'PVEAPIToken=root@pam!console-user=f6576457-0126-41b3-88de-c580a24606c6',
+        'Authorization': 'PVEAPIToken=API@pve!front-end=a9094682-9fd4-4bd0-ab13-5dffc4617d6d',
         'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    httpsAgent: new https.Agent({ rejectUnauthorized: false }) // Ignore SSL certificate issues
+    }
 };
 
 // Discord webhook URL
@@ -88,200 +83,65 @@ const sendOkay = async (endpoint) => {
     }
 };
 
-// Create HTTP server instance
-const server = http.createServer(app);
 
-// WebSocket server for VNC connections
-const wss = new WebSocket.Server({ server });
 
-// WebSocket server connection handler
-wss.on('connection', (ws, req) => {
-    const containerId = req.url.split('/').pop(); // Assuming URL is like ws://localhost:35300/103
-
-    // Function to obtain access token from Proxmox API
-    const getAccessToken = async () => {
-        try {
-            const response = await axios.post(`${proxmoxConfig.baseURL}/nodes/h3066910/lxc/${containerId}/termproxy`, {}, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': proxmoxConfig.headers.Authorization
-                },
-                httpsAgent: proxmoxConfig.httpsAgent
-            });
-
-            return response.data.data.ticket;
-        } catch (error) {
-            console.error('Failed to obtain access token:', error);
-            throw error;
-        }
-    };
-
-    // Handle WebSocket connection
-    const handleWebSocket = async () => {
-        try {
-            const accessToken = await getAccessToken();
-            const proxmoxWsUrl = `wss://proxmox.astralaxis.tech/nodes/h3066910/lxc/${containerId}/vncwebsocket?port=5900&vncticket=${accessToken}`;
-
-            console.log(`Connecting to WebSocket URL: ${proxmoxWsUrl}`);
-
-            const proxmoxWs = new WebSocket(proxmoxWsUrl, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Sec-Websocket-Protocol': 'binary',
-                    'Sec-Websocket-Version': '13',
-                    'Sec-Websocket-Extensions': 'permessage-deflate; client_max_window_bits'
-                }
-            });
-
-            proxmoxWs.on('open', () => {
-                console.log(`WebSocket connection opened for container ${containerId}`);
-            });
-
-            proxmoxWs.on('message', (message) => {
-                // Forward messages from Proxmox WebSocket to the client WebSocket
-                ws.send(message);
-            });
-
-            proxmoxWs.on('close', () => {
-                console.log(`WebSocket connection closed for container ${containerId}`);
-                ws.close();
-            });
-
-            proxmoxWs.on('error', (error) => {
-                console.error(`WebSocket error for container ${containerId}:`, error);
-                // Handle error appropriately, e.g., close WebSocket connection
-                proxmoxWs.close();
-            });
-
-            // WebSocket client connection handler
-            ws.on('message', (message) => {
-                // Forward messages from client WebSocket to Proxmox WebSocket
-                proxmoxWs.send(message);
-            });
-
-            ws.on('close', () => {
-                console.log(`Client WebSocket connection closed for container ${containerId}`);
-                proxmoxWs.close();
-            });
-
-            ws.on('error', (error) => {
-                console.error(`Client WebSocket error for container ${containerId}:`, error);
-                // Handle error appropriately, e.g., close WebSocket connection
-                proxmoxWs.close();
-            });
-        } catch (error) {
-            console.error('Failed to handle WebSocket connection:', error);
-            // Handle error appropriately
-            ws.close();
-        }
-    };
-
-    // Start handling WebSocket connection
-    handleWebSocket();
-});
-
-// Define other routes as needed (e.g., /lxc, /node/status, /vms)
-
-// Define a route for /lxc/:id to fetch container specifications
-app.get('/lxc/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const apiUrl = `${proxmoxConfig.baseURL}/nodes/h3066910/lxc/${id}/status/current`;
-
-        const response = await axios.get(apiUrl, {
-            ...proxmoxConfig
-        });
-
-        const containerSpecs = {
-            vcpu: response.data.data.cpus,
-            cpuUsage: response.data.data.cpu,
-            memoryUsage: response.data.data.mem,
-            maxMemory: response.data.data.maxmem,
-            diskUsage: response.data.data.disk,
-            maxDisk: response.data.data.maxdisk,
-            network: response.data.data.netin,
-            maxNetwork: response.data.data.netout
-        };
-
-        res.json(containerSpecs);
-        await sendOkay(`/lxc/${id}`);
-    } catch (error) {
-        console.error(error);
-        await sendErrorToDiscord(error, `/lxc/${id}`);
-        res.status(500).json({ error: 'Failed to fetch container specifications' });
-    }
-});
 
 // Define a route for /lxc to fetch all LXC containers
 app.get('/lxc', async (req, res) => {
     try {
-        const apiUrl = `${proxmoxConfig.baseURL}/nodes/h3066910/lxc`;
+        const apiUrl = 'https://cpanel.in-cloud.us/api/application/servers';
+        const params = {
+            page: 1,
+            per_page: 50
+        };
 
         const response = await axios.get(apiUrl, {
-            ...proxmoxConfig
+            headers: {
+                'Authorization': 'Bearer 2|NThhqCh6kN3bckZTNKZZ3DfNqM6EEB0rZlFpym63',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            params: params
         });
 
         res.json(response.data);
-        await sendOkay('/lxc');
+        await sendOkay('Provided Servers');
     } catch (error) {
         console.error(error);
-        await sendErrorToDiscord(error, '/lxc');
+        await sendErrorToDiscord(error, 'Failed to Provide servers');
         res.status(500).json({ error: 'Failed to fetch data' });
     }
 });
 
-// Define a route for /lxc/stop/:id to stop the LXC container
-app.post('/lxc/stop/:id', async (req, res) => {
-    const { id } = req.params;
-
+app.get('/qemu', async (req, res) => {
     try {
-        const apiUrl = `${proxmoxConfig.baseURL}/nodes/h3066910/lxc/${id}/status/stop`;
-
-        console.log(`Attempting to stop container ${id}`);
-
-        const response = await axios.post(apiUrl, null, proxmoxConfig);
-
-        console.log(`Successfully stopped container ${id}`);
-        res.json({ message: `Successfully stopped container ${id}` });
-        await sendOkay(`/lxc/stop/${id}`);
-    } catch (error) {
-        console.error(`Failed to stop container ${id}:`, error);
-        await sendErrorToDiscord(error, `/lxc/stop/${id}`);
-        res.status(500).json({ error: `Failed to stop container ${id}` });
-    }
-});
-
-// Define a route for /lxc/start/:id to start the LXC container
-app.post('/lxc/start/:id', async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const apiUrl = `${proxmoxConfig.baseURL}/nodes/h3066910/lxc/${id}/status/start`;
-
-        console.log(`Attempting to start container ${id}`);
-
-        const response = await axios.post(apiUrl, null, proxmoxConfig);
-
-        console.log(`Successfully started container ${id}`);
-        res.json({ message: `Successfully started container ${id}` });
-        await sendOkay(`/lxc/start/${id}`);
-    } catch (error) {
-        console.error(`Failed to start container ${id}:`, error);
-        await sendErrorToDiscord(error, `/lxc/start/${id}`);
-        res.status(500).json({ error: `Failed to start container ${id}` });
-    }
-});
-
-// Define a route for /node/status to fetch node status
-app.get('/node/status', async (req, res) => {
-    try {
-        const apiUrl = `${proxmoxConfig.baseURL}/nodes/h3066910/status`;
+        const apiUrl = `${proxmoxConfig.baseURL}/`;
 
         const response = await axios.get(apiUrl, {
             ...proxmoxConfig
         });
 
         res.json(response.data);
+        await sendOkay('/qemu');
+    } catch (error) {
+        console.error(error);
+        await sendErrorToDiscord(error, '/qemu');
+        res.status(500).json({ error: 'Failed to fetch data' });
+    }
+});
+
+
+
+// Define a route for /node/status to check if the node is online or offline
+app.get('/node/status', async (req, res) => {
+    try {
+        const apiUrl = `${proxmoxConfig.baseURL}/status`;
+
+        const response = await axios.get(apiUrl, {
+            ...proxmoxConfig
+        });
+
+        res.json({ status: "online" });
         await sendOkay('/node/status');
     } catch (error) {
         console.error(error);
@@ -290,7 +150,7 @@ app.get('/node/status', async (req, res) => {
     }
 });
 
-// Start HTTP server
-server.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+// Start the server
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });

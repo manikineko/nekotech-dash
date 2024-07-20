@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import anime from 'animejs/lib/anime.es.js';
+import { Resizable } from 're-resizable';
 import {
   Avatar,
   AvatarImage,
@@ -17,6 +18,7 @@ import { SiIcon } from 'react-icons/si';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { BsCloud } from 'react-icons/bs';
 
 const SideBar = () => {
   const [user, setUser] = useState(null);
@@ -59,45 +61,41 @@ const SideBar = () => {
 
   const handleLogout = async () => {
     await signOut(auth);
-    window.location.href = '/?page=login';
+    window.location.href = '/login';
   };
 
   return (
     <aside className="flex flex-col w-34 p-4 bg-gray-900">
       <div className="flex items-center justify-center h-16 mb-8">
-        <img src="/logo.svg" alt="Neko-Astral Logo" className="logo" />
+        <img src="/logo.svg" alt="Neko-Astral Logo" className="w-12 h-12" />
       </div>
       <nav className="flex-1 space-y-4 sidebar-animation">
-        <a href="/?page=dashboard" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <HomeIcon className="w-5 h-5" />
           <span>Home</span>
         </a>
-        <a href="/?page=servers" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/Servers" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <ServerIcon className="w-5 h-5" />
           <span>Servers</span>
         </a>
-        <a href="/?page=activity" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
-          <ActivityIcon className="w-5 h-5" />
-          <span>Activity</span>
+        <a href="/conv" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+          <BsCloud className="w-5 h-5" />
+          <span>Convoy</span>
         </a>
-        <a href="/?page=payment" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/Payment" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <ReceiptIcon className="w-5 h-5" />
           <span>Payment</span>
         </a>
-        <a href="/?page=shop" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/Shop" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <StoreIcon className="w-5 h-5" />
           <span>Shop</span>
         </a>
-        <a href="/?page=conv" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
-          <ServerIcon className="w-5 h-5" />
-          <span>Convoy Info</span>
-        </a>
-        <a href="/?page=settings" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+        <a href="/Settings" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
           <SettingsIcon className="w-5 h-5" />
           <span>Settings</span>
         </a>
         {user && user.isAdmin && (
-          <a href="/?page=admin" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
+          <a href="/Admin" className="flex items-center px-4 py-2 space-x-2 rounded-md hover:bg-gray-700 hover:animate-fadeIn">
             <SiIcon className="w-5 h-5" />
             <span>Admin</span>
           </a>
@@ -105,10 +103,17 @@ const SideBar = () => {
       </nav>
       {user && (
         <div className="flex items-center justify-center h-16 mt-8">
-          <Avatar className="avatar">
-            <AvatarImage src="/user.svg" />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
+          <Resizable
+            defaultSize={{
+              width: 26,
+              height: 26,
+            }}
+          >
+            <Avatar>
+              <AvatarImage src="/user.svg" className="avatar" />
+              <AvatarFallback>You</AvatarFallback>
+            </Avatar>
+          </Resizable>
           <span className="ml-2">{user.email}</span>
         </div>
       )}

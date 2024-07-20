@@ -1,10 +1,8 @@
 import React from 'react';
 import Header from './Header';
 import SideBar from './SideBar';
-import LaunchConvoyPanel from './LaunchConvoyPanel';
-import Discord from './Discord';
 
-const Servers = () => {
+const Profile = () => {
   return (
     <div className="flex h-screen bg-gray-800 text-white">
       <SideBar />
@@ -12,10 +10,8 @@ const Servers = () => {
         <div className="container mx-auto p-4">
           <Header />
           <div className="bg-gray-900 shadow-md rounded-md p-4">
-            <h2 className="text-lg font-semibold mb-2">Servers (Login to Convoy)</h2>
-            <LaunchConvoyPanel/>
-            <Discord/>
-            
+            <h2 className="text-lg font-semibold mb-2">Settings</h2>
+            <p>🚧 This page is Under Construction</p>
           </div>
         </div>
       </main>
@@ -23,4 +19,4 @@ const Servers = () => {
   );
 };
 
-export default Servers;
+export default Profile;
