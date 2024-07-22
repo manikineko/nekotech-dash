@@ -1,38 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Custom hook for authentication
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { createServer, getAllUsers } from '../LibConvoy';
-import { getFreeServers, addFreeServer } from '../Auth'; // Import the functions
 
-// Function to convert storage units to bytes
-const convertToBytes = (size, unit) => {
-  const units = {
-    KB: 1024,
-    MB: 1024 * 1024,
-    GB: 1024 * 1024 * 1024,
-    TB: 1024 * 1024 * 1024 * 1024,
-  };
-  return size * units[unit.toUpperCase()];
-};
-
-const CreateVPS = ({ setMessage, maxCpu = 1, maxMemory = 1, maxDisk = 20, maxBandwidth = 30, maxVpsCount = 1 }) => {
+const CreateVps = () => {
   const [name, setName] = useState('');
   const [hostname, setHostname] = useState('');
   const [email, setEmail] = useState('');
-  const [cpu, setCpu] = useState(1);
-  const [memory, setMemory] = useState(1);
-  const [disk, setDisk] = useState(10);
-  const [bandwidth, setBandwidth] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [password, setPassword] = useState('');
   const [userPassword, setUserPassword] = useState('');
-  const [dedicatedIP, setDedicatedIP] = useState(false);
-  const [currentVpsCount, setCurrentVpsCount] = useState(0);
 
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const { user } = useAuth(); // Get the current user from authentication context
 
   useEffect(() => {
     const fetchUserPassword = async () => {
@@ -44,7 +23,7 @@ const CreateVPS = ({ setMessage, maxCpu = 1, maxMemory = 1, maxDisk = 20, maxBan
 
           if (userSnap.exists()) {
             const userData = userSnap.data();
-            setUserPassword(userData.Convoy || ''); // Set default if Convoy is undefined
+            setUserPassword(userData.Convoy); // Assuming 'Convoy' field contains the password
           } else {
             setError('User data not found.');
           }
@@ -58,109 +37,62 @@ const CreateVPS = ({ setMessage, maxCpu = 1, maxMemory = 1, maxDisk = 20, maxBan
     fetchUserPassword();
   }, [user]);
 
-  useEffect(() => {
-    const fetchCurrentVpsCount = async () => {
-      if (user) {
-        try {
-          const freeServers = await getFreeServers(user.uid);
-          setCurrentVpsCount(freeServers);
-        } catch (err) {
-          console.error(err);
-          setError('Failed to fetch VPS count.');
-        }
-      }
-    };
-
-    fetchCurrentVpsCount();
-  }, [user]);
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setError('');
     setSuccess('');
-    setPassword('');
-
-    if (currentVpsCount >= maxVpsCount) {
-      setError(`You have reached the maximum allowed VPS count of ${maxVpsCount}.`);
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 8 || !/[!@#$%^&*(),.?":{}|<>]/g.test(password)) {
-      setError('Password must be at least 8 characters long and include at least one special character.');
-      setLoading(false);
-      return;
-    }
 
     try {
       // Fetch user ID based on email
-      const userResponse = await getAllUsers();
-      
-      // Log the response to inspect its structure
-      console.log('User response data:', userResponse);
+      const userResponse = await axios.get('https://cpanel.in-cloud.us/api/application/users', {
+        headers: {
+          Authorization: `Bearer 1|3Bckfcpv1LhPiMAG0i6ycvbRAnLMtdof9RA5kkar`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
 
-      // Ensure data is an array before calling find
-      const userDataArray = userResponse.data || []; // Adjust based on actual API response
-      const userData = userDataArray.find(user => user.email === email);
+      const userData = userResponse.data.data.find(user => user.email === email);
 
       if (!userData) {
         setError('User not found.');
         setLoading(false);
         return;
       }
-      if(memory > maxMemory) {
-        setError(`Memory cannot exceed ${maxMemory} GB.`);
-        setLoading(false);
-        return;
-      }
-      if(disk > maxDisk) {
-        setError(`Disk size cannot exceed ${maxDisk} GB.`);
-        setLoading(false);
-        return;
-      }
-      if(bandwidth > maxBandwidth) {
-        setError(`Bandwidth cannot exceed ${maxBandwidth} GB.`);
-        setLoading(false);
-        return;
-      }
-      if(cpu > maxCpu) {
-        setError(`CPU cores cannot exceed ${maxCpu}.`);
-        setLoading(false);
-        return;
-      }
+
       // Create the VPS
-      const serverData = {
+      const response = await axios.post('https://cpanel.in-cloud.us/api/application/servers', {
         node_id: 1,
         user_id: userData.id,
         name: name,
         hostname: hostname,
         vmid: null,
         limits: {
-          cpu: parseInt(cpu),
-          memory: convertToBytes(memory, 'GB'), // Convert memory to bytes
-          disk: convertToBytes(disk, 'GB'), // Convert disk to bytes
-          bandwidth: convertToBytes(bandwidth, 'GB'), // Convert bandwidth to bytes
+          cpu: 1,
+          memory: 1024 * 1024 * 1024, // 1 GB
+          disk: 10 * 1024 * 1024 * 1024, // 10 GB
           snapshots: 0,
           backups: null,
-          address_ids: dedicatedIP ? [1] : [] // Assuming ID 1 for dedicated IP
+          bandwidth: null,
+          address_ids: [] // No addresses specified
         },
-        account_password: password, // Use the provided password
+        account_password: userPassword, // Use the retrieved password
         should_create_server: true,
         template_uuid: 'b00edf9e-5041-4a87-983e-72a9a2f2d3d8', // Default template ID
         start_on_completion: false
-      };
+      }, {
+        headers: {
+          Authorization: `Bearer ${process.env.REACT_APP_CONVOY_TOKEN}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
 
-      const response = await createServer(serverData);
       setSuccess('VM deployed successfully.');
-      setMessage && setMessage('VM deployed successfully.');
-
-      // Increment the free server count
-      await addFreeServer(user.uid);
-      setCurrentVpsCount(currentVpsCount + 1); // Increment the VPS count
     } catch (err) {
       console.error(err);
-      setError(`Failed to deploy VM: ${err.message}`);
+      setError('Failed to deploy VM.');
     } finally {
       setLoading(false);
     }
@@ -193,7 +125,7 @@ const CreateVPS = ({ setMessage, maxCpu = 1, maxMemory = 1, maxDisk = 20, maxBan
           />
         </div>
         <div>
-          <label className="block text-lg mb-1" htmlFor="email">Convoy Email</label>
+          <label className="block text-lg mb-1" htmlFor="email">User Email</label>
           <input
             type="email"
             id="email"
@@ -201,80 +133,6 @@ const CreateVPS = ({ setMessage, maxCpu = 1, maxMemory = 1, maxDisk = 20, maxBan
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-2 rounded-lg bg-gray-800 border border-gray-600"
             required
-          />
-        </div>
-        <div>
-          <label className="block text-lg mb-1" htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 rounded-lg bg-gray-800 border border-gray-600"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-lg mb-1" htmlFor="cpu">CPU Cores ({cpu})</label>
-          <input
-            type="range"
-            id="cpu"
-            value={cpu}
-            onChange={(e) => setCpu(e.target.value)}
-            className="w-full"
-            min="1"
-            max={maxCpu}
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-lg mb-1" htmlFor="memory">Memory ({memory} GB)</label>
-          <input
-            type="range"
-            id="memory"
-            value={memory}
-            onChange={(e) => setMemory(e.target.value)}
-            className="w-full"
-            min="1"
-            max={maxMemory}
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-lg mb-1" htmlFor="disk">Disk Size ({disk} GB)</label>
-          <input
-            type="range"
-            id="disk"
-            value={disk}
-            onChange={(e) => setDisk(e.target.value)}
-            className="w-full"
-            min="10"
-            max={maxDisk}
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-lg mb-1" htmlFor="bandwidth">Bandwidth ({bandwidth} GB)</label>
-          <input
-            type="range"
-            id="bandwidth"
-            value={bandwidth}
-            onChange={(e) => setBandwidth(e.target.value)}
-            className="w-full"
-            min="1"
-            max={maxBandwidth}
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-lg mb-1" htmlFor="dedicatedIP">Dedicated IP</label>
-          <input
-            type="checkbox"
-            id="dedicatedIP"
-            checked={dedicatedIP}
-            onChange={(e) => setDedicatedIP(e.target.checked)}
-            className="ml-2 p-2 rounded-lg bg-gray-800 border border-gray-600"
-            disabled
           />
         </div>
         <button
@@ -287,14 +145,8 @@ const CreateVPS = ({ setMessage, maxCpu = 1, maxMemory = 1, maxDisk = 20, maxBan
         {success && <p className="text-green-300">{success}</p>}
         {error && <p className="text-red-300">{error}</p>}
       </form>
-      {password && (
-        <div className="mt-4 p-4 bg-gray-800 rounded-lg shadow-md">
-          <p className="text-lg font-semibold">VPS Created with password:</p>
-          <p className="text-green-300">{password}</p>
-        </div>
-      )}
     </div>
   );
 };
 
-export default CreateVPS;
+export default CreateVps;
