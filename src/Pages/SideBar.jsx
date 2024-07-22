@@ -18,6 +18,7 @@ import { SiIcon } from 'react-icons/si';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { WiHail } from 'react-icons/wi';
 import { BsCloud } from 'react-icons/bs';
 
 const SideBar = () => {

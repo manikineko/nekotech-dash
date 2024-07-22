@@ -48,7 +48,7 @@ const Header = () => {
           <div className="headers-animation text-center mt-4">
 
             <h1 className="text-lg text-gray-200">Manage Your Virtual Environments</h1> 
-            <p className="text-lg text-gray-200 opacity-35">Version 1.01 Beta ©️2024 In-Cloud.us</p> 
+            <p className="text-lg text-gray-200 opacity-35">Version 1.0 Beta ©️2024 In-Cloud.us</p> 
           </div>
         </div>
       </header>

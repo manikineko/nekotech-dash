@@ -7,7 +7,7 @@ import SideBar from './SideBar';
 import { onAuthStateChanged } from 'firebase/auth';
 import LaunchConvoyPanel from './LaunchConvoyPanel';
 import LaunchConvoyPanel2 from './LaunchConvoyPanel2';
-import CreateVPS from './CreateVPS';
+
 const Conv = () => {
   const [user, setUser] = useState(null);
   const [convoyUser, setConvoyUser] = useState(null);
@@ -297,7 +297,6 @@ const Conv = () => {
               )}
             </div>
           )}
-          <CreateVPS/>
           <LaunchConvoyPanel2/>
         </div>
 
