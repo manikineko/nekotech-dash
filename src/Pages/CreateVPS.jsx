@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { createServer, getAllUsers } from '../LibConvoy';
-import { getFreeServers, addFreeServer } from '../Auth'; // Import the functions
 
 // Function to convert storage units to bytes
 const convertToBytes = (size, unit) => {
@@ -62,8 +61,16 @@ const CreateVPS = ({ setMessage, maxCpu = 1, maxMemory = 1, maxDisk = 20, maxBan
     const fetchCurrentVpsCount = async () => {
       if (user) {
         try {
-          const freeServers = await getFreeServers(user.uid);
-          setCurrentVpsCount(freeServers);
+          const db = getFirestore();
+          const userDoc = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userDoc);
+
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setCurrentVpsCount(userData.serverCount || 0); // Set default if serverCount is undefined
+          } else {
+            setError('User data not found.');
+          }
         } catch (err) {
           console.error(err);
           setError('Failed to fetch VPS count.');
@@ -155,9 +162,13 @@ const CreateVPS = ({ setMessage, maxCpu = 1, maxMemory = 1, maxDisk = 20, maxBan
       setSuccess('VM deployed successfully.');
       setMessage && setMessage('VM deployed successfully.');
 
-      // Increment the free server count
-      await addFreeServer(user.uid);
-      setCurrentVpsCount(currentVpsCount + 1); // Increment the VPS count
+      // Increment the server count in Firestore
+      const db = getFirestore();
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, {
+        serverCount: currentVpsCount + 1
+      });
+      setCurrentVpsCount(currentVpsCount + 1); // Increment the VPS count in state
     } catch (err) {
       console.error(err);
       setError(`Failed to deploy VM: ${err.message}`);
