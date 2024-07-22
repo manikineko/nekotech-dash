@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { createUser, getAllUsers, updateUser } from '../LibConvoy';
 import Header from './Header';
 import SideBar from './SideBar';
+import { onAuthStateChanged } from 'firebase/auth';
+import LaunchConvoyPanel from './LaunchConvoyPanel';
 import LaunchConvoyPanel2 from './LaunchConvoyPanel2';
 import CreateVPS from './CreateVPS';
-
 const Conv = () => {
   const [user, setUser] = useState(null);
   const [convoyUser, setConvoyUser] = useState(null);
@@ -15,10 +15,13 @@ const Conv = () => {
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const fetchUser = async (user) => {
@@ -30,13 +33,28 @@ const Conv = () => {
           if (userData.Convoy && userData.Convoy.length > 0) {
             setConvoyUser(userData.Convoy[0]);
           } else {
-            const usersResponse = await getAllUsers();
-            const convoyUserData = usersResponse.data.find(u => u.email === user.email);
-            if (convoyUserData) {
-              setConvoyUser(convoyUserData);
-              await setDoc(doc(db, 'users', user.uid), { Convoy: [convoyUserData] }, { merge: true });
-            } else {
-              setConvoyUser(null);
+            // Check Convoy API for user existence
+            try {
+              const response = await axios.get(`https://cpanel.in-cloud.us/api/application/users?filter[email]=${user.email}`, {
+                headers: {
+                  'Authorization': 'Bearer 2|NThhqCh6kN3bckZTNKZZ3DfNqM6EEB0rZlFpym63',
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                },
+              });
+              const convoyUsers = response.data.data;
+              const existingUser = convoyUsers.find(u => u.email === user.email);
+              if (existingUser) {
+                setConvoyUser(existingUser);
+                // Save Convoy account info in Firebase
+                await setDoc(doc(db, 'users', user.uid), {
+                  Convoy: [{ name: existingUser.name, email: existingUser.email, password: '' }],
+                }, { merge: true });
+              } else {
+                setConvoyUser(null);
+              }
+            } catch (error) {
+              setError('Error fetching Convoy user data.');
             }
           }
         } else {
@@ -68,23 +86,36 @@ const Conv = () => {
       return;
     }
 
-    if (formData.password.length < 8 || !/[!@#$%^&*(),.?":{}|<>]/g.test(formData.password)) {
-      setError('Password must be at least 8 characters long and include at least one special character.');
-      return;
-    }
-
     try {
-      const response = await createUser({
+      // Create user in Convoy
+      const response = await axios.post('https://cpanel.in-cloud.us/api/application/users', {
+        root_admin: false,
         name: formData.name,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+      }, {
+        headers: {
+          'Authorization': 'Bearer 2|NThhqCh6kN3bckZTNKZZ3DfNqM6EEB0rZlFpym63',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
       });
 
+      // Store user information in Firebase
       await setDoc(doc(db, 'users', user.uid), {
-        Convoy: [{ id: response.data.id, name: formData.name, email: formData.email, password: formData.password }],
+        Convoy: [{ name: formData.name, email: formData.email, password: formData.password }],
       }, { merge: true });
 
-      setConvoyUser(response.data);
+      // Fetch and set updated Convoy user info
+      const convoyResponse = await axios.get(`https://cpanel.in-cloud.us/api/application/users?filter[email]=${formData.email}`, {
+        headers: {
+          'Authorization': 'Bearer 2|NThhqCh6kN3bckZTNKZZ3DfNqM6EEB0rZlFpym63',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      const newUser = convoyResponse.data.data.find(u => u.email === formData.email);
+      setConvoyUser(newUser);
       setShowCreateForm(false);
       setFormData({ name: '', email: '', password: '' });
     } catch (error) {
@@ -95,20 +126,30 @@ const Conv = () => {
 
   const handleEditUser = async () => {
     if (!formData.name || !formData.email) {
-      setError('Name and Convoy Email are required.');
+      setError('Name and Email are required.');
       return;
     }
 
     try {
-      const response = await updateUser(convoyUser.id, {
+      // Update user in Convoy
+      const response = await axios.put(`https://cpanel.in-cloud.us/api/application/users/${convoyUser.id}`, {
+        root_admin: convoyUser.root_admin,
         name: formData.name,
-        email: formData.email
+        email: formData.email,
+      }, {
+        headers: {
+          'Authorization': 'Bearer 2|NThhqCh6kN3bckZTNKZZ3DfNqM6EEB0rZlFpym63',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
       });
 
+      // Update user information in Firebase
       await setDoc(doc(db, 'users', user.uid), {
-        Convoy: [{ ...convoyUser, name: formData.name, email: formData.email }],
+        Convoy: [{ name: formData.name, email: formData.email, password: convoyUser.password }],
       }, { merge: true });
 
+      // Fetch and set updated Convoy user info
       setConvoyUser({ ...convoyUser, name: formData.name, email: formData.email });
       setShowEditForm(false);
       setFormData({ name: '', email: '', password: '' });
@@ -133,12 +174,6 @@ const Conv = () => {
     setShowPassword(false);
   };
 
-  useEffect(() => {
-    if (convoyUser) {
-      setFormData({ ...formData, email: convoyUser.email });
-    }
-  }, [convoyUser]);
-
   return (
     <div className="flex h-screen bg-gray-800 text-white">
       <SideBar />
@@ -154,7 +189,7 @@ const Conv = () => {
               {convoyUser ? (
                 <div>
                   <p><strong>Name:</strong> {convoyUser.name}</p>
-                  <p><strong>Convoy Email:</strong> {convoyUser.email}</p>
+                  <p><strong>Email:</strong> {convoyUser.email}</p>
                   <button
                     className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
                     onClick={() => setShowEditForm(true)}
@@ -191,7 +226,7 @@ const Conv = () => {
                       />
                       <input
                         type="email"
-                        placeholder="Convoy Email"
+                        placeholder="Email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="block w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded"
@@ -232,7 +267,7 @@ const Conv = () => {
                       />
                       <input
                         type="email"
-                        placeholder="Convoy Email"
+                        placeholder="Email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="block w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded"
@@ -262,10 +297,12 @@ const Conv = () => {
               )}
             </div>
           )}
-          <LaunchConvoyPanel2 />
-          <CreateVPS setMessage={setMessage} maxCpu={2} maxMemory={4} maxDisk={20} maxBandwidth={30} maxVpsCount={1} />
+          <CreateVPS/>
+          <LaunchConvoyPanel2/>
         </div>
+
       </main>
+      
     </div>
   );
 };

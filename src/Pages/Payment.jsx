@@ -3,6 +3,7 @@ import Header from './Header';
 import SideBar from './SideBar';
 import { FaMoneyBillWave, FaSpinner } from 'react-icons/fa'; // Importing icons from react-icons/fa
 import { auth, db } from '../firebase';
+import LaunchPaymentPanel from './LaunchPaymentPanel'; // Importing the new LaunchPaymentPanel component
 
 const Payment = () => {
   const [payments, setPayments] = useState([]);
@@ -46,7 +47,7 @@ const Payment = () => {
             ) : (
               <div>
                 {payments.length === 0 ? (
-                  <p>No payments found.</p>
+                  <p>This Payments Panel is not yet implemented Please Launch the payment panel.</p>
                 ) : (
                   <ul className="divide-y divide-gray-800">
                     {payments.map((payment) => (
@@ -62,6 +63,7 @@ const Payment = () => {
               </div>
             )}
           </div>
+          <LaunchPaymentPanel />
         </div>
       </main>
     </div>
