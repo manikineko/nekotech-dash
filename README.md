@@ -1,4 +1,6 @@
-## 📚 [Install Tailwind CSS with Vite@React Latest](https://tailwindcss.com/docs/guides/vite)
+## Old panel of in-cloud.us/manikineko.nl/nekoaxis
+### based on the  📚 [Install Tailwind CSS with Vite@React Latest](https://tailwindcss.com/docs/guides/vite) tutorial and my contributions as well as some of a currupt ex COO that doxed me and catfishes people lieing about her age
+
 
 - 👉 Install React with Vite in "root" folder
 
